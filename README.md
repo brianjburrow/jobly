@@ -1,2 +1,11 @@
-# jobly
-Cumulative project for Springboard focused on node and express app development
+# Jobly Backend
+
+This is the Express backend for Jobly, version 2.
+
+To run this:
+
+    node server.js
+    
+To run the tests:
+
+    jest -i
