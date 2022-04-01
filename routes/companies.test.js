@@ -66,6 +66,7 @@ describe("POST /companies", function () {
 /************************************** GET /companies */
 
 describe("GET /companies", function () {
+
   test("ok for anon", async function () {
     const resp = await request(app).get("/companies");
     expect(resp.body).toEqual({
@@ -91,6 +92,54 @@ describe("GET /companies", function () {
               description: "Desc3",
               numEmployees: 3,
               logoUrl: "http://c3.img",
+            },
+          ],
+    });
+  });
+
+  test("ok for anon, filter by name", async function () {
+    const resp = await request(app).get("/companies?name=c1");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              description: "Desc1",
+              numEmployees: 1,
+              logoUrl: "http://c1.img",
+            },
+          ],
+    });
+  });
+
+  test("ok for anon, filter by minEmployees", async function () {
+    const resp = await request(app).get("/companies?minEmployees=3");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c3",
+              name: "C3",
+              description: "Desc3",
+              numEmployees: 3,
+              logoUrl: "http://c3.img",
+            },
+          ],
+    });
+  });
+
+  test("ok for anon, filter by maxEmployees", async function () {
+    const resp = await request(app).get("/companies?maxEmployees=1&fake=Nothing");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              description: "Desc1",
+              numEmployees: 1,
+              logoUrl: "http://c1.img",
             },
           ],
     });

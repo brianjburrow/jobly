@@ -31,7 +31,6 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
-
     const company = await Company.create(req.body);
     return res.status(201).json({ company });
   } catch (err) {
@@ -45,14 +44,24 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Can filter on provided search filters:
  * - minEmployees
  * - maxEmployees
- * - nameLike (will find case-insensitive, partial matches)
+ * - name like (will find case-insensitive, partial matches)
  *
  * Authorization required: none
  */
 
 router.get("/", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
+    let filterQuery = {};
+    const allowedFilters = ['name', 'minEmployees', 'maxEmployees'];
+    console.log(req.query)
+    for (const key in req.query){
+      console.log(key)
+      if (allowedFilters.includes(key)){
+        filterQuery[key] = req.query[key];
+      }
+    }
+    console.log(filterQuery);
+    const companies = await Company.findAll(filterQuery);
     return res.json({ companies });
   } catch (err) {
     return next(err);

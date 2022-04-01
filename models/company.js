@@ -45,7 +45,7 @@ class Company {
   }
 
   /** Find all companies.
-   *
+   * Allow user to filter based only on name, minEmployees, and maxEmployees
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
@@ -56,15 +56,25 @@ class Company {
                       num_employees AS "numEmployees",
                       logo_url AS "logoUrl"
                   FROM companies`
-    const allowedFilters = {'name':'LOWER(name) LIKE ', 'minEmployees':'num_employees>=', 'maxEmployees':'num_employees<='}
+
+    // map the request parameters to appropriate SQL filters
+    const allowedFilters = {
+        'name':'LOWER(name) LIKE ', 
+        'minEmployees':'num_employees>=', 
+        'maxEmployees':'num_employees<='
+   }
+    
+   // if user passed in a query string, append these to the main query
     if (filterQuery){
       let counter = 0;
       for (const key in filterQuery){
-        if (counter == 0 && key in allowedFilters){
-             filterQuery[key] = key == 'name' ? `%${filterQuery[key].toLowerCase()}%`: filterQuery[key];
+        // need to add the where clause only once
+        if (counter == 0){
+          // lowercase any name filters so that it is case insensitive. format correctly for like
+            filterQuery[key] = key == 'name' ? `%${filterQuery[key].toLowerCase()}%`: filterQuery[key];
             query = `${query} WHERE ${allowedFilters[key]}'${filterQuery[key]}'`
             counter += 1;
-        } else if (key in allowedFilters){
+        } else {
           query = `${query} AND ${allowedFilters[key]}'${filterQuery[key]}'`
         }
       }

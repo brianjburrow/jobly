@@ -191,8 +191,6 @@ describe("findAll", function () {
         },
       ]);
   });
-
-
 });
 
 /************************************** get */
@@ -240,6 +238,7 @@ describe("update", function () {
           `SELECT handle, name, description, num_employees, logo_url
            FROM companies
            WHERE handle = 'c1'`);
+
     expect(result.rows).toEqual([{
       handle: "c1",
       name: "New",
