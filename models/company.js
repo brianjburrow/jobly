@@ -49,15 +49,28 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
-    const companiesRes = await db.query(
-          `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
+  static async findAll(filterQuery) {
+    let query = `SELECT handle,
+                      name,
+                      description,
+                      num_employees AS "numEmployees",
+                      logo_url AS "logoUrl"
+                  FROM companies`
+    const allowedFilters = {'name':'LOWER(name) LIKE ', 'minEmployees':'num_employees>=', 'maxEmployees':'num_employees<='}
+    if (filterQuery){
+      let counter = 0;
+      for (const key in filterQuery){
+        if (counter == 0 && key in allowedFilters){
+             filterQuery[key] = key == 'name' ? `%${filterQuery[key].toLowerCase()}%`: filterQuery[key];
+            query = `${query} WHERE ${allowedFilters[key]}'${filterQuery[key]}'`
+            counter += 1;
+        } else if (key in allowedFilters){
+          query = `${query} AND ${allowedFilters[key]}'${filterQuery[key]}'`
+        }
+      }
+    }
+    query = `${query} ORDER BY name`;
+    const companiesRes = await db.query(query);
     return companiesRes.rows;
   }
 
