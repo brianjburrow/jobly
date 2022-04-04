@@ -139,6 +139,18 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
 
+    // search for jobs applied for by the user
+    const applicationResults = await db.query(
+      `SELECT job_id 
+      FROM applications
+      WHERE username = $1`,
+      [username]
+      );
+    const applications = applicationResults.rows;
+
+    // don't add an empty jobs attribute if the user hasn't applied for any jobs
+    if (applications.length > 0) user['jobs'] = applications.map(row => row.job_id)
+    
     return user;
   }
 
@@ -203,6 +215,23 @@ class User {
     const user = result.rows[0];
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
+  }
+
+  /** Create a job application for a user in the database. */
+
+  static async apply(username, jobId) {
+      let result = await db.query(
+              `INSERT INTO applications
+              (username, job_id)
+              VALUES ($1, $2)
+              RETURNING username, job_id`,
+            [username, jobId],
+        );
+        const application = result.rows[0];
+
+        if (!application) throw new NotFoundError(`No user: ${username} or job with id ${jobId}`);
+        
+        return application
   }
 }
 

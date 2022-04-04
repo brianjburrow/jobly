@@ -7,6 +7,7 @@ const {
 } = require("../expressError");
 const db = require("../db.js");
 const User = require("./user.js");
+const Job = require("./job.js");
 const {
   commonBeforeAll,
   commonBeforeEach,
@@ -50,6 +51,28 @@ describe("authenticate", function () {
       expect(err instanceof UnauthorizedError).toBeTruthy();
     }
   });
+});
+
+
+/************************************** applications */
+
+describe("applications", function () {
+  test("works", async function () {
+    const job = await Job.create({
+      title: 'SE',
+      salary: 100,
+      equity: 0,
+      companyHandle: 'c1'
+    })
+
+    const application = await User.apply('u1', job.id)
+
+    expect(application).toEqual({
+      username: "u1",
+      job_id: job.id
+    });
+  });
+
 });
 
 /************************************** register */
@@ -140,6 +163,35 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+    });
+  });
+
+  test("works with job applications", async function () {
+    const job = await Job.create({
+      title: 'SE',
+      salary: 100,
+      equity: 0,
+      companyHandle: 'c1'
+    })
+
+    const job2 = await Job.create({
+      title: 'SE',
+      salary: 100,
+      equity: 0,
+      companyHandle: 'c2'
+    })
+
+    let application = await User.apply('u1', job.id);
+    let application2 = await User.apply('u1', job2.id);
+
+    let user = await User.get("u1");
+    expect(user).toEqual({
+      username: "u1",
+      firstName: "U1F",
+      lastName: "U1L",
+      email: "u1@email.com",
+      isAdmin: false,
+      jobs: [job.id, job2.id]
     });
   });
 

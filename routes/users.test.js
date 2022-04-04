@@ -127,6 +127,48 @@ describe("POST /users", function () {
   });
 });
 
+
+/************************************** POST /users/:username/jobs/:jobId */
+
+describe("POST /users/:username/jobs/:jobId", function () {
+  test("works for non-admin users", async function () {
+    const result = await db.query(`SELECT * FROM jobs`);
+    const job = result.rows[0];
+    const resp = await request(app)
+        .post(`/users/u1/jobs/${job.id}`)
+        .send({})
+        .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(201);
+    expect(resp.body).toEqual({
+        username: "u1",
+        job_id: job.id
+      });
+  });
+
+
+  test("unauth for anon", async function () {
+    const result = await db.query(`SELECT * FROM jobs`);
+    const job = result.rows[0];
+    const resp = await request(app)
+        .post(`/users/u1/jobs/${job.id}`)
+        .send({});
+    expect(resp.statusCode).toEqual(401);
+  });
+
+
+  test("bad request if invalid data", async function () {
+    const result = await db.query(`SELECT * FROM jobs`);
+    const job = result.rows[0];
+    const resp = await request(app)
+        .post(`/users/c0/jobs/${job.id}`)
+        .send({})
+        .set("authorization", `Bearer ${u4Token}`);
+    expect(resp.statusCode).toEqual(500);
+  });
+
+});
+
+
 /************************************** GET /users */
 
 describe("GET /users", function () {

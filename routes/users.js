@@ -11,6 +11,7 @@ const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
 const userNewSchema = require("../schemas/userNew.json");
 const userUpdateSchema = require("../schemas/userUpdate.json");
+const applicationNewSchema = require("../schemas/applicationNew.json");
 
 const router = express.Router();
 
@@ -43,6 +44,39 @@ router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
   }
 });
 
+/** POST /:username/jobs/:jobId {}  => { applied: jobId }
+ *
+ * Adds a new user. This is not the registration endpoint --- instead, this is
+ * only for admin users to add new users. The new user being added can be an
+ * admin.
+ *
+ * This returns the newly created user and an authentication token for them:
+ *  {user: { username, firstName, lastName, email, isAdmin }, token }
+ *
+ * Authorization required: login
+ **/
+
+ router.post("/:username/jobs/:jobId", ensureLoggedIn, async function (req, res, next) {
+   try{
+      const {username, jobId: jobIdString} = req.params;
+
+      const jobId = parseInt(jobIdString);
+
+      const validator = jsonschema.validate({username, jobId}, applicationNewSchema);
+
+      if (!validator.valid) {
+        const errs = validator.errors.map(e => e.stack);
+
+        throw new BadRequestError(errs);
+      }
+
+      const result = await User.apply(username, jobId)
+
+      return res.status(201).json(result);
+   } catch (err){
+     next(err)
+   }
+});
 
 /** GET / => { users: [ {username, firstName, lastName, email }, ... ] }
  *
